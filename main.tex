@@ -1,35 +1,51 @@
-\documentclass{report}
+\documentclass{book}
+\usepackage[a4paper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
+% ------------------------ Italian ------------------------
 \usepackage[italian]{babel}
-
-\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
-
-\usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage[colorlinks=true, allcolors=blue]{hyperref}
-
-% Italian packages
 \usepackage[T1]{fontenc}
 \usepackage[italian]{babel}
 \usepackage{hyphenat}
-\hyphenation{mate-mati-ca recu-perare}
 
-\nocite{*} % TODO remove when you have references
 
+<<<<<<< HEAD
 \title{CryptoNight \& RandomX} % TODO change title
 \author{Alessia Angelone, Francesco Baccaro, Simona Bertè, \\ Emilio Cassaro, Christian Coduri, Giovanni Nicosia}
 \date{\today}
+=======
+% ------------------------ Package ------------------------
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{amsmath}
+\usepackage[colorlinks=true, allcolors=black]{hyperref}
+
+% ------------------------ Bibliografia ------------------------
+\bibliographystyle{unsrt}
+\usepackage[nottoc]{tocbibind}
+
+\title{CryptoNight \& RandomX} % TODO: change title
+\author{Giovanni Nicosia, Alessia Angelone, Christian Coduri, Simona Bertè} % TODO: add all the authors
+\date{13 Giugno 2024}
+% --------------------------------------------------------------
+
+
+
+>>>>>>> f36cf8d99639a119d9047c31b4934776b254a6af
 
 \begin{document}
 \maketitle
+\tableofcontents
 
-\begin{abstract}
-Your abstract.
-\end{abstract}
+% \begin{abstract}
+% Your abstract.
+% \end{abstract}
 
+
+\include{chapters/cryptonight&asic}
+\include{chapters/privacy}
 \include{chapters/randomx}
 
-\bibliographystyle{alpha}
-\bibliography{sample}
-
+\bibliography{references}
 \end{document}
