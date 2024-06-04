@@ -1,0 +1,76 @@
+\chapter{RandomX}
+
+\section{Design di Randomx}
+Per minimizzare il vantaggio di hardware specializzati come gli ASIC, già precedentemente discussi, un algoritmo di \textbf{Proof of Work} (\textbf{PoW}) deve potersi legare ai dispositivi esistenti il cui uso risulti essere ampiamente diffuso. Non a caso, si focalizza sull'utilizzo delle \textbf{CPU} per i seguenti motivi:
+
+\begin{itemize}
+    \item \textbf{Accessibilità}: Le CPU, essendo meno specializzate, sono più diffuse e accessibili. Un algoritmo basato su CPU è più \textbf{egalitario} e permette a più partecipanti di unirsi alla rete, contrariamente a ciò che accadeva con gli ASIC in quanto il loro notevole costo permetteva una centralizzazione del mining nelle mani di pochi;
+    \item \textbf{Istruzioni Hardware Comuni}: CPU diverse \textbf{condividono} un grande \textit{subset} di istruzioni hardware native;
+    \item \textbf{Documentazione e Compilatori}: Tutti i principali set di istruzioni CPU sono ben \textbf{documentati} con diversi compilatori \textbf{open-source} disponibili.
+\end{itemize}
+
+\subsection{Prova di Lavoro Dinamica} 
+L'idea alla base di una \textbf{Proof of Work} basata su CPU è l'impiego di un \textit{lavoro dinamico} sfruttando il fatto che queste accettano come input non solo \textbf{dati}, come le tipiche funzioni di hash crittografiche, ma anche il \textbf{codice}. Ciò evita che le sequenza delle operazioni sia fissa e quindi più facilmente eseguibile da un circuito integrato specializzato. Una \textbf{Proof of Work dinamica} consiste in 4 steps:
+\begin{enumerate}
+    \item Generazione di un programma casuale;
+    \item Traduzione nel codice macchina nativo della CPU;
+    \item Esecuzione del programma;
+    \item Trasformazione dell'output del programma in un valore crittograficamente sicuro.
+\end{enumerate}
+
+\subsubsection{Generazione di un programma casuale}
+Inizialmente la progettazione di una Proof of Work si basava sulla generazione di un programma in linguaggi ad alto livello, come C o Javascript, ma questi per via della loro sintassi complessa, implicavano notevoli costi in termini di tempo.
+
+Il modo più veloce per generare un programma casuale è utilizzare un generatore senza logica, riempiendo semplicemente un \textbf{buffer con dati casuali}. Questo richiede la progettazione di un linguaggio di programmazione senza sintassi, in cui tutte le stringhe di bit casuali rappresentano programmi validi.
+
+\subsubsection{Traduzione del Programma in Codice Macchina}
+Per generare il codice macchina il più velocemente possibile, il nostro set di istruzioni deve essere il più vicino possibile all'hardware nativo, ma allo stesso tempo deve risultare abbastanza generico in modo da non limitare l'algoritmo a una specifica architettura CPU.
+
+\subsubsection{Esecuzione del Programma}
+L'esecuzione del programma dovrebbe utilizzare il \textbf{maggior numero} possibile di \textbf{componenti della CPU}. Alcune delle caratteristiche che dovrebbero essere sfruttate sono:
+\begin{itemize}
+    \item Cache multi-livello (L1, L2, L3);
+    \item Cache  \textmu op;
+    \item Unità logica aritmetica (ALU);
+    \item Unità a virgola mobile (FPU);
+    \item Controller di memoria;
+    \item Parallelismo a livello di istruzione;
+    \item Esecuzione fuori ordine;
+    \item Esecuzione speculativa;
+    \item Rinominazione dei registri.
+\end{itemize}
+
+\subsubsection{Calcolo del Risultato Finale}
+\textbf{Blake2b} è una funzione di hashing crittograficamente sicura, progettata per essere veloce nel software, soprattutto sui moderni processori a 64 bit, dove è circa tre volte più veloce di SHA-3. Proprio per questo è ideale per essere utilizzata in una \textbf{Proof of Work} basata su \textbf{CPU}.
+
+Per quanto riguarda, invece, l'elaborazione di grandi quantità di dati in modo crittograficamente sicuro, l'\textbf{Advanced Encryption Standard }(\textbf{AES}) può fornire la massima velocità di elaborazione perché molte CPU moderne supportano l'accelerazione hardware di queste operazioni.
+
+\subsection{"Easy program problem"}
+Il problema dell'\textit{easy program} si basa sul fatto che quando viene generato un programma casuale, si potrebbe decidere di eseguirlo solo in caso sia favorevole. Questa strategia è fattibile per due motivi principali:
+
+\begin{itemize}
+    \item \textbf{Distribuzione del Tempo di Esecuzione}: I tempi di esecuzione dei programmi generati casualmente seguono tipicamente una \textit{distribuzione log-normale}. Questi possono rapidamente analizzati e in caso di tempo di esecuzione superiore alla media, l'esecuzione può essere saltata e può essere generato un nuovo programma. Se quest'ultima operazione risulta essere economica, può migliorare significativamente le prestazioni.
+    \item \textbf{Ottimizzazione delle Caratteristiche}: Un'implementazione potrebbe scegliere di ottimizzare un sottoinsieme delle caratteristiche necessarie per l'esecuzione del programma. Ad esempio, si può decidere di eliminare il supporto per alcune operazioni (come la divisione) o di implementare alcune sequenze di istruzioni in modo più efficiente. In seguito, i programmi generati verrebbero analizzati ed eseguiti solo se soddisfano i requisiti specifici dell'implementazione ottimizzata.
+\end{itemize}
+
+Queste strategie di ricerca di programmi con particolari proprietà vanno in \textbf{contrasto} con gli obiettivi di questa \textbf{Proof of Work}, quindi devono essere eliminate:
+\begin{itemize}
+    \item \textbf{Soluzione}: Esecuzione di una sequenza di \textbf{N programmi casuali}, in modo che ogni programma sia generato dall'\textbf{output del precedente}. L'output del programma finale viene quindi utilizzato come risultato.
+    \item \textbf{Principio}: Una volta eseguito il primo programma, un miner deve decidere \textbf{se impegnarsi a terminare l'intera catena} (che può includere programmi sfavorevoli) o ricominciare da capo e sprecare lo sforzo impiegato sulla catena non completata;
+    \item \textbf{Vantaggio}: Uniformare il tempo di esecuzione per l'intera catena, poiché la deviazione relativa di una somma di tempi di esecuzione distribuiti identicamente è ridotta.
+\end{itemize}
+
+\subsection{Tempo di verifica}
+Poiché lo scopo del \textbf{Proof of Work} è di essere utilizzato in una \textbf{rete peer-to-peer} senza fiducia, i partecipanti alla rete devono essere in grado di verificare rapidamente se una prova è valida o meno. Ciò pone un \textbf{limite} superiore alla \textbf{complessità dell'algoritmo} di \textbf{Proof of Work}. In particolare, abbiamo fissato l'obiettivo per RandomX di essere almeno altrettanto veloce da verificare quanto la funzione di hash CryptoNight, che mira a sostituire.
+
+\subsection{Memory-hardness}
+Oltre alle risorse computazionali pure, come \textbf{ALU} e \textbf{FPU}, le \textbf{CPU} di solito hanno accesso a una grande quantità di memoria sotto forma di DRAM. Le prestazioni del sottosistema di memoria sono tipicamente ottimizzate per adattarsi alle capacità di calcolo.
+
+Per utilizzare la \textbf{memoria esterna} così come i controller di memoria on-chip, l'\textbf{algoritmo di Proof of Work} dovrebbe accedere a un grande \textbf{buffer} di memoria (chiamato "\textbf{Dataset}"). Il Dataset deve essere:
+
+\begin{itemize}
+    \item \textbf{più grande} di quanto possa essere memorizzato on-chip (per richiedere memoria esterna);
+    \item \textbf{dinamico} (per richiedere memoria scrivibile)
+\end{itemize}
+
+Idealmente, la dimensione del Dataset dovrebbe essere di almeno 4 GiB. Tuttavia, a causa dei vincoli sul tempo di verifica la dimensione utilizzata da RandomX è stata selezionata a 2080 MiB.

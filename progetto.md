@@ -9,7 +9,8 @@
 #### Cryptonight (Simona)
 #### Nesso con l'attacco del 2018 e RandomX (Giovanni)
 
-## RandomX (Giovanni e Alessia)
+## Cryptonote TODAY
+### RandomX (Giovanni e Alessia)
 
 # Links
 
