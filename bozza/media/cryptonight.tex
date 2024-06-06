@@ -71,15 +71,21 @@ e viene eseguito uno XOR con una costante chiamata \texttt{Rcon} (Round
 constant). I dettagli di una pseudo implementazione del codice per
 l'espansione della chiave è presente qui. {[}21\^{}{]}
 
-\includegraphics{media/image8.png}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width = 0.55\textwidth]{image8.png}
+\end{figure}
+
 
 Viene allocato uno \textbf{scratchpad} di 2097152 bytes.{[}\^{}22{]}
 Dall'output di Keccak vengono estratti i byte \texttt{64...191} e divisi
 in 8 blocchi di 16 byte ciascuno. Ogni blocco viene cifrato utilizzando
 il seguente codice:
-
+\begin{verbatim}
 {[} \text{for } i \in \{0,\ldots,9\} \Rightarrow \textbackslash{}
 \quad block = AES\_\{\text{round}\}(block, \mathbf{K}\_i) {]}
+\end{verbatim}
+
 
 \subsubsection{Funzione cifratura AES}\label{funzione-cifratura-aes}
 
@@ -87,7 +93,6 @@ La funzione \texttt{aes\_round} esegue un round di cifratura AES, che
 consiste nell'eseguire i passaggi seguenti sul blocco:
 
 \begin{itemize}
-\tightlist
 \item
   SubBytes: ogni byte del blocco viene sostituito con un valore criptato
   utilizzando una tabella di sostituzione \emph{S-Box}.

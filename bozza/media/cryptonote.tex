@@ -93,7 +93,7 @@ le persone comuni desiderano mantenere riservate le proprie spese
 personali.
 
 \subsection{Proprietà di Irretracciabilità e Non
-Collegabilità}\label{proprietuxe0-di-irretracciabilituxe0-e-non-collegabilituxe0}
+Collegabilità}\label{proprieta-di-irretracciabilita-e-non-collegabilita}
 
 T. Okamoto e K. Ohta hanno descritto sei criteri per un sistema di
 denaro elettronico ideale, uno dei quali riguarda la privacy: la
@@ -102,7 +102,6 @@ relazione tra l'utente e i suoi acquisti deve essere irrintracciabile
 anonimo servono due proprietà:
 
 \begin{itemize}
-\tightlist
 \item
   Irretracciabilità: per ogni transizione eseguita tutti i possibili
   mittenti devono avere la stessa probabilità di essere identificati.
@@ -203,36 +202,36 @@ Alla base dell'algoritmo di firma si usa EdDSA, sviluppato e
 implementato da \emph{D.J. Bernstein} {[}15\^{}{]}, parametri comuni di
 dominio sono: - q: numero primo; - d: elemento of Fq; - E: equazione
 della curva ellittica; - G: punto base; - l: ordine primo del punto
-base; - Hs: funzione hash crittografica \{0, 1\} ∗ → Fq; - Hp: funzione
+base; - Hs: funzione hash crittografica \{0, 1\} * → Fq; - Hp: funzione
 hash deterministica E(Fq) → E(Fq).
 
 Al fine di ottenere una maggiore privacy, sono necessari alcuni nuovi
 termini che non dovrebbero essere confusi con le entità di Bitcoin:
 
 \begin{itemize}
-\item
-  \textbf{private ec-key} è una chiave segreta standard di curva
-  ellittica: un numero 𝑎 ∈ {[}1,𝑙−1{]}
-\item
-  \textbf{public ec-key} è una chiave pubblica standard di curva
-  ellittica: un punto 𝐴=𝑎𝐺;
-\item
-  \textbf{one-time keypair} è una coppia di chiavi ec-private e
-  ec-public;
-\item
-  \textbf{private user key} è una coppia \emph{(a, b)} di due diverse
-  chiavi ec-private;
-\item
-  \textbf{tracking key} è una coppia \emph{(a, B)} di chiave ec-private
-  e chiave ec-public \emph{(dove 𝐵=𝑏𝐺 e 𝑎≠𝑏)};
-\item
-  \textbf{public user key} è una coppia \emph{(A, B)} di due chiavi
-  ec-public derivate da \emph{(a, b)};
-\item
-  \textbf{standard} \textbf{address} è una rappresentazione di una
-  chiave utente pubblica mediante una stringa digitabile
-  dall\textquotesingle utente con correzione degli errori.
-\end{itemize}
+  \item
+    \textbf{private ec-key} è una chiave segreta standard di curva
+    ellittica: un numero $a \in [1,l-1]$
+  \item
+    \textbf{public ec-key} è una chiave pubblica standard di curva
+    ellittica: un punto $A=aG$;
+  \item
+    \textbf{one-time keypair} è una coppia di chiavi ec-private e
+    ec-public;
+  \item
+    \textbf{private user key} è una coppia \emph{$(a, b)$} di due diverse
+    chiavi ec-private;
+  \item
+    \textbf{tracking key} è una coppia \emph{$(a, B)$} di chiave ec-private
+    e chiave ec-public \emph{(dove $B=bG$ e $a \neq b$)};
+  \item
+    \textbf{public user key} è una coppia \emph{$(A, B)$} di due chiavi
+    ec-public derivate da \emph{$(a, b)$};
+  \item
+    \textbf{standard} \textbf{address} è una rappresentazione di una
+    chiave utente pubblica mediante una stringa digitabile
+    dall\textquotesingle utente con correzione degli errori.
+  \end{itemize}
 
 La struttura generale della transazione rimane quasi identica a quella
 di Bitcoin: ogni utente può scegliere diversi pagamenti (transaction
@@ -256,7 +255,7 @@ Gli indirizzi Bitcoin classici, una volta pubblicati, diventano
 identificatori inequivocabili per ogni pagamento in entrata,
 collegandoli tra loro e associandoli al destinatario.
 
-\includegraphics{media/image6.png}
+\includegraphics{image6.png}
 
 Viene proposta una soluzione che consente all\textquotesingle utente di
 pubblicare un singolo indirizzo e ricevere pagamenti incondizionati non
@@ -265,7 +264,7 @@ pubblica unica, derivata dall\textquotesingle indirizzo del destinatario
 e dall\textquotesingle iniezione di dati casuali da parte del
 mittente.\\
 
-\includegraphics{media/image7.png}
+\includegraphics{image7.png}
 
 Innanzitutto, il mittente esegue il protocollo di scambio Diffie-Hellman
 per ottenere un segreto condiviso dai suoi dati e da una metà
@@ -283,29 +282,29 @@ Una transazione standard procede come segue:
 \item
   Alice vuole inviare un pagamento a Bob, che ha pubblicato il suo
   indirizzo. Lo decomprime e ottiene la chiave utente pubblica di Bob
-  \emph{(A, B)}.
+  \emph{$(A, B)$}.
 \item
-  Alice genera un numero casuale 𝑟 ∈ {[}1,𝑙−1{]} e calcola la chiave
-  pubblica one-time 𝑃=𝐻𝑠(𝑟𝐴)𝐺+𝐵.
+  Alice genera un numero casuale $r \in [1,l-1]$ e calcola la chiave
+  pubblica one-time $P=H_s(rA)G+B$.
 \item
-  Alice usa 𝑃 come chiave di destinazione per l\textquotesingle output e
-  inserisce anche il valore 𝑅=𝑟𝐺 (come parte del protocollo
+  Alice usa $P$ come chiave di destinazione per l\textquotesingle output e
+  inserisce anche il valore $R=rG$ (come parte del protocollo
   Diffie-Hellman) da qualche parte nella transazione. Alice può creare
   altri output con chiavi pubbliche uniche: chiavi diverse dei
-  destinatari \emph{(𝐴𝑖,𝐵𝑖)} implicano 𝑃𝑖\hspace{0pt} diversi anche con
-  lo stesso 𝑟.
+  destinatari \emph{$(A_i,B_i)$} implicano $P_i$ diversi anche con
+  lo stesso $r$.
 
-  \includegraphics{media/image3.png}
+  \includegraphics{image3.png}
 \item
-  Bob controlla ogni transazione in arrivo con la sua chiave privata (a,
-  b), calcolando 𝑃′=𝐻𝑠(𝑎𝑅)𝐺+𝐵. Se la transazione di Alice è presente,
-  allora 𝑎𝑅=𝑎𝑟𝐺=𝑟𝐴 e 𝑃′=𝑃.
+  Bob controlla ogni transazione in arrivo con la sua chiave privata $(a,
+  b)$, calcolando $P'=H_s(aR)G+B$. Se la transazione di Alice è presente,
+  allora $aR=arG=rA$ e $P'=P$.
 \item
   Ora Bob può recuperare la chiave privata una tantum corrispondente:
-  𝑥=𝐻𝑠(𝑎𝑅)+𝑏, così come 𝑃=𝑥𝐺. Può spendere questo output in qualsiasi
-  momento firmando la transazione con 𝑥.
+  $x=H_s(aR)+b$, così come $P=xG$. Può spendere questo output in qualsiasi
+  momento firmando la transazione con $x$.
 
-  \includegraphics{media/image4.png}
+  \includegraphics{image4.png}
 \end{enumerate}
 
 Di conseguenza, Bob riceve pagamenti in entrata associati a chiavi
@@ -322,20 +321,19 @@ usa diverse tipi di firme, consiste di quattro algoritmi (\textbf{GEN,
 SIG, VER, LNK}).
 
 \begin{itemize}
-\tightlist
-\item
-  \textbf{GEN} prende parametri pubblici e restituisce una coppia ec
-  \emph{(P, x)} e una chiave pubblica I.
-\item
-  \textbf{SIG} riceve un messaggio m, un insieme S' di chiavi pubbliche
-  \{Pi\}i≠s, le coppie \emph{(Ps, xs)} e restituisce una firma σ e un
-  insieme S = S' ∪ \{Ps\}.
-\item
-  \textbf{VER} riceve un messaggio m, un insieme S, una firma σ e
-  restituisce "true" o "false".
-\item
-  \textbf{LNK} riceve un insieme I = \{Ii\}, una firma σ e restituisce
-  "linked" o "indep".
+  \item
+    \textbf{GEN} prende parametri pubblici e restituisce una coppia ec
+    \emph{$(P, x)$} e una chiave pubblica $I$.
+  \item
+    \textbf{SIG} riceve un messaggio $m$, un insieme $S'$ di chiavi pubbliche
+    $\{P_i\}_{i \neq s}$, le coppie \emph{$(P_s, x_s)$} e restituisce una firma $\sigma$ e un
+    insieme $S = S' \cup \{P_s\}$.
+  \item
+    \textbf{VER} riceve un messaggio $m$, un insieme $S$, una firma $\sigma$ e
+    restituisce "true" o "false".
+  \item
+    \textbf{LNK} riceve un insieme $I = \{I_i\}$, una firma $\sigma$ e restituisce
+    "linked" o "indep".
 \end{itemize}
 
 Lo scopo principale del protocollo è il seguente: un utente produce una
@@ -344,26 +342,28 @@ da un insieme di chiavi. Il vero firmatario è indistinguibile dagli
 altri proprietari di chiavi fino a quando non produce la seconda firma
 sotto la stessa coppia di chiavi.
 
-\includegraphics{media/image5.png}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width = 0.55\textwidth]{image5.png}
+\end{figure}
 
 \begin{itemize}
-\tightlist
-\item
-  \textbf{GEN}: Il firmatario sceglie casualmente una chiave segreta 𝑥 ∈
-  {[}1,𝑙−1{]} e calcola la chiave pubblica corrispondente 𝑃=𝑥𝐺. Inoltre,
-  calcola un\textquotesingle altra chiave pubblica 𝐼=𝑥𝐻𝑝(𝑃) chiamata
-  "immagine della chiave".
-\item
-  \textbf{SIG}: Il firmatario genera una firma ad anello one-time con
-  una prova a conoscenza zero non interattiva. Seleziona un sottoinsieme
-  casuale 𝑆'\hspace{0pt} di n - 1 chiavi pubbliche di altri utenti 𝑃𝑖,
-  la propria coppia di chiavi (x, P) e l\textquotesingle immagine della
-  chiave I. Sia 1≤𝑠≤𝑛 l\textquotesingle indice segreto del firmatario in
-  S (in modo che la sua chiave sia 𝑃𝑠).\\
-  Si sceglie casualmente un elemento casuale da \{qi \textbar{} i = 1
-  ... n\} e \{wi \textbar{} i = 1 ... n, i ≠ s\} da (1 ... l) e effettua
-  i seguenti passaggi:
-  \[ L_i = \begin{cases} q_iG, & \text{se } i = s \\ q_iG+w_iP_i, & \text{se } i \neq s \end{cases} \]
+  \item
+    \textbf{GEN}: Il firmatario sceglie casualmente una chiave segreta $x \in
+    [1,l-1]$ e calcola la chiave pubblica corrispondente $P=xG$. Inoltre,
+    calcola un\textquotesingle altra chiave pubblica $I=xHp(P)$ chiamata
+    "immagine della chiave".
+  \item
+    \textbf{SIG}: Il firmatario genera una firma ad anello one-time con
+    una prova a conoscenza zero non interattiva. Seleziona un sottoinsieme
+    casuale $S'$ di $n - 1$ chiavi pubbliche di altri utenti $P_i$,
+    la propria coppia di chiavi $(x, P)$ e l\textquotesingle immagine della
+    chiave $I$. Sia $1 \leq s \leq n$ l\textquotesingle indice segreto del firmatario in
+    $S$ (in modo che la sua chiave sia $P_s$).\\
+    Si sceglie casualmente un elemento casuale da $\{q_i | i = 1
+    ... n\}$ e $\{w_i | i = 1 ... n, i \neq s\}$ da $(1 ... l)$ e effettua
+    i seguenti passaggi:
+    \[ L_i = \begin{cases} q_iG, & \text{se } i = s \\ q_iG+w_iP_i, & \text{se } i \neq s \end{cases} \]
 \end{itemize}
 
 \[ R_i = \begin{cases} q_iH_p(P_i), & \text{se } i = s \\ q_iH_p(P_{i})+ w_iI, & \text{se } i \neq s \end{cases} \]
@@ -396,11 +396,12 @@ passate (questi valori sono memorizzati nell\textquotesingle insieme I).
 Un doppio utilizzo significa che sono state prodotte due firme con la
 stessa chiave segreta.\\
 Meccanismo del protocollo: utilizzando L-commitments, il firmatario
-dimostra di conoscere un certo 𝑥 tale che almeno una 𝑃𝑖=𝑥𝐺. Per rendere
+dimostra di conoscere un certo $x$ tale che almeno una $Pi = xG$.
+Per rendere
 questa prova non ripetibile introduciamo l\textquotesingle immagine
-della chiave come 𝐼=𝑥𝐻𝑝(𝑃). Il firmatario utilizza gli stessi
-coefficienti (𝑟𝑖,𝑐𝑖) per dimostrare quasi la stessa cosa: egli conosce
-un certo 𝑥 tale che almeno uno 𝐻𝑝(𝑃𝑖)=𝐼⋅𝑥\^{}−1. Se 𝑥→𝐼 è iniettiva:
+della chiave come $I=xHp(P)$. Il firmatario utilizza gli stessi
+coefficienti $(r_i,c_i)$ per dimostrare quasi la stessa cosa: egli conosce
+un certo $x$ tale che almeno uno $Hp(P_i)=I \cdot x^{-1}$. Se $x \rightarrow I$ è iniettiva:
 
 \begin{verbatim}
 - Nessuno può recuperare la chiave pubblica dall\'immagine della chiave
