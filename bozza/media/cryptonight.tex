@@ -54,7 +54,7 @@ bytes) viene passato nella funzione di hash di Keccak. Viene scelta con
 \texttt{b\ =\ 1600}, quindi con dimensione dell'output di 1600 bit o 200
 bytes e con dimensione del digest di 512 bits o 64 bytes con il
 parametro \texttt{c\ =\ 512}. Questi byte saranno definiti come
-\textbf{Keccak state}
+\textbf{Keccak state} \cite{keccak_parameters}
 
 I byte \texttt{0..31} risultanti dall'output della funzione vengono
 scelti come chiave per l'algoritmo di cifratura AES-256. La chiave non
@@ -71,20 +71,26 @@ e viene eseguito uno XOR con una costante chiamata \texttt{Rcon} (Round
 constant). I dettagli di una pseudo implementazione del codice per
 l'espansione della chiave è presente qui. {[}21\^{}{]}
 
-\begin{figure}[h]
+\begin{figure}
   \centering
-  \includegraphics[width = 0.55\textwidth]{image8.png}
+  \includegraphics[width = 0.60\textwidth]{image8.png}
+  \caption{Pseudoimplemetazione codice cifratura}
 \end{figure}
-
+\newpage
 
 Viene allocato uno \textbf{scratchpad} di 2097152 bytes.{[}\^{}22{]}
 Dall'output di Keccak vengono estratti i byte \texttt{64...191} e divisi
 in 8 blocchi di 16 byte ciascuno. Ogni blocco viene cifrato utilizzando
 il seguente codice:
-\begin{verbatim}
-{[} \text{for } i \in \{0,\ldots,9\} \Rightarrow \textbackslash{}
-\quad block = AES\_\{\text{round}\}(block, \mathbf{K}\_i) {]}
-\end{verbatim}
+
+\begin{algorithm}
+  \caption{AES Rounds}
+  \begin{algorithmic}[1]
+  \For{$i = 0$ \textbf{to} $9$}
+      \State block = \texttt{aes\_round}(block, round\_keys[$i$])
+  \EndFor
+  \end{algorithmic}
+  \end{algorithm}
 
 
 \subsubsection{Funzione cifratura AES}\label{funzione-cifratura-aes}
