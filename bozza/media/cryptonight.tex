@@ -50,7 +50,7 @@ Skein
 scratchpad}\label{prima-parte-inizializzazione-dello-scratchpad}
 
 L'input della funzione di hash (in Monero, ad esempio, di dimensione 80
-bytes) viene passato nella funzione di hash di Keccak. Viene scelta con
+bytes) viene passato nella funzione di hash di Keccak\cite{bertoni2011keccak}. Viene scelta con
 \texttt{b\ =\ 1600}, quindi con dimensione dell'output di 1600 bit o 200
 bytes e con dimensione del digest di 512 bits o 64 bytes con il
 parametro \texttt{c\ =\ 512}. Questi byte saranno definiti come
@@ -58,18 +58,18 @@ parametro \texttt{c\ =\ 512}. Questi byte saranno definiti come
 
 I byte \texttt{0..31} risultanti dall'output della funzione vengono
 scelti come chiave per l'algoritmo di cifratura AES-256. La chiave non
-viene utilizzata così com'è, ma viene espansa in 10 sotto-chiavi, con lo
+viene utilizzata così com'è, ma viene espansa\cite{standard2001federal} in 10 sotto-chiavi, con lo
 scopo di rendere l'algoritmo più sicuro, utilizzando più di una chiave
 AES per cifrare. L'espansione viene fatta dividendo la chiave in 8
 parole di 4 byte ciascuna. Per generare le due parole rimaste al fine
-completare i 10 \emph{key rounds} {[}\^{}20{]}, si esegue la rotazione
+completare i 10 \emph{key rounds} , si esegue la rotazione
 dell'ultima parola generata, effettuata con la funzione
 \texttt{RotWord()}, che esegue una permutazione ciclica e avendo come
 input {[}\emph{a0,a1,a2,a3}{]} ritorna {[}\emph{a1,a2,a3,a4}{]}.
 Successivamente vengono sostituiti i byte utilizzando una \textbf{S-Box}
 e viene eseguito uno XOR con una costante chiamata \texttt{Rcon} (Round
 constant). I dettagli di una pseudo implementazione del codice per
-l'espansione della chiave è presente qui. {[}21\^{}{]}
+l'espansione della chiave è presente qui.
 
 \begin{figure}
   \centering
@@ -78,7 +78,7 @@ l'espansione della chiave è presente qui. {[}21\^{}{]}
 \end{figure}
 \newpage
 
-Viene allocato uno \textbf{scratchpad} di 2097152 bytes.{[}\^{}22{]}
+Viene allocato uno \textbf{scratchpad} di 2097152 bytes.\cite{crypto_note_standard_cryptonight}
 Dall'output di Keccak vengono estratti i byte \texttt{64...191} e divisi
 in 8 blocchi di 16 byte ciascuno. Ogni blocco viene cifrato utilizzando
 il seguente codice:
@@ -106,7 +106,7 @@ consiste nell'eseguire i passaggi seguenti sul blocco:
   ShiftRows: le righe del blocco vengono spostate di una posizione.
 \item
   MixColumns: le colonne del blocco vengono mescolate utilizzando una
-  matrice 4x4 nota come MDS{[}23\^{}{]}, progettata per essere difficile
+  matrice 4x4 nota come MDS, progettata per essere difficile
   da invertire.
 \item
   Infine, il risultato è XORato con la chiave specifica per quel round.
@@ -120,7 +120,7 @@ e il risultato viene scritto nei successivi 128 byte. Questa operazione
 viene effettuata 10 volte, per riempire tutto lo scratchpad di dati
 pseudo-randomici. I byte \texttt{64..191}, che chiameremo
 \emph{payload}, sono cifrati in questo modo 10 volte. Questo diagramma
-mostra le operazioni effettuate in questa prima parte
+mostra le operazioni effettuate in questa prima parte:
 
 \begin{verbatim}
                                +-----+
@@ -186,7 +186,7 @@ Successivamente farò un immagine su questa cosa, ricordatemelo.
 memory-hard}\label{seconda-parte-loop-memory-hard}
 
 La seconda parte si compone di un algoritmo che mantiene lo stato
-composto da 52488 iterazioni{[}\^{}24{]}. Si utilizzano operazioni
+composto da 52488 iterazioni. Si utilizzano operazioni
 CPU-friendly, come la cifratura AES, XOR, moltiplicazioni e addizioni di
 8 byte, per avere come unico
 
@@ -299,7 +299,8 @@ risultato}\label{terza-parte-calcolo-del-risultato}
 
 Dopo aver effettuato le operazioni memory-hard, i byte \texttt{32..63}
 dati dall'hashing effettuato con Keccak vengono espansi in 10
-\emph{round-keys} come nella prima parte.\\
+\emph{round-keys} come nella prima parte.
+
 I byte \texttt{64..191} dello stesso hashing vengono presi e viene
 effettuato uno XOR con i primi 128 byte dello scratchpad. Il risultato
 di questa operazione viene criptato con la funzione \texttt{aes\_round}
@@ -309,22 +310,33 @@ Il risultato di questa cifratura viene passato da uno XOR con i 128
 bytes successivi dello scratchpad, cifrati nuovamente con la stessa
 funzione, fino ad arrivare agli ultimi 128 byte dello scratchpad. Dopo
 aver cifrato gli ultimi 128 byte viene effettuato lo XOR con gli ultimi
-128 byte dello scratchpad.\\
+128 byte dello scratchpad.
+
 I byte \texttt{64..191} del **Keccak state* vengono sostituiti con Il
 risultato dell'operazione effettuata in precedenza. Tutti i 200 byte
 dello stato di Keccak vengono passati da una permutazione, chiamata
 \emph{Keccak-f}, con parametro \texttt{b\ =\ 1600}, l'implementazione
 più sicura. Questa operazione viene effettuate per mescolare i bit dello
 stato Keccak, in modo da rendere difficile la criptoanalisi del flusso
-di dati.\\
+di dati.
+
 Infine, i due bit più a destra vengono utilizzati per selezionare una
-funzione di hash: - 0: BLAKE-256 {[}5\^{}{]} - 1: Groest1-256
-{[}6\^{}{]} - 2: JH-256 {[}7\^{}{]} - 3: Skein-256 {[}8\^{}{]}
+funzione di hash:
+
+\begin{itemize}
+  \item 
+  0: BLAKE-256\cite{aumasson2008sha}
+  \item
+  1: Groest1-256\cite{groestl}
+  \item 
+  2: JH-256\cite{jh}
+  \item 
+  3: Skein-256\cite{skein}
+\end{itemize}
 
 L'output di questa funzione di hash viene applicato al Keccak state, e
 l'hash risultante è l'output di CryptoNight. Il diagramma sottostante
 rappresenta il calcolo del risultato:
-
 \begin{verbatim}
  +-------------------------------------------------------------+
    |                         Final state                         |
