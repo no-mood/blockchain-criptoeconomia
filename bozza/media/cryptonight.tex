@@ -130,68 +130,14 @@ scratchpad. Questi ultimi vengono cifrati nuovamente nello stesso modo,
 e il risultato viene scritto nei successivi 128 byte. Questa operazione
 viene effettuata 10 volte, per riempire tutto lo scratchpad di dati
 pseudo-randomici. I byte \texttt{64..191}, che chiameremo
-\emph{payload}, sono cifrati in questo modo 10 volte. Questo diagramma
-mostra le operazioni effettuate in questa prima parte:
+\emph{payload}, sono cifrati in questo modo 10 volte. 
 
-\begin{verbatim}
-                               +-----+
-                               |Input|
-                               +-----+
-                                  |
-                                  V
-                             +--------+
-                             | Keccak |
-                             +--------+
-                                  |
-                                  V
-   +-------------------------------------------------------------+
-   |                         Final state                         |
-   +-------------+--------------+---------------+----------------+
-   | Bytes 0..31 | Bytes 32..63 | Bytes 64..191 | Bytes 192..199 |
-   +-------------+--------------+---------------+----------------+
-          |                             |
-          V                             |
-   +-------------+                      V
-   | Round key 0 |------------+---+->+-----+
-   +-------------+            |   |  |     |
-   |      .      |            |   |  |     |
-   |      .      |            |   |  | AES |
-   |      .      |            |   |  |     |
-   +-------------+            |   |  |     |
-   | Round key 9 |----------+-|-+-|->+-----+                 +---+
-   +-------------+          | | | |     |                    |   |
-                            | | | |     +------------------->|   |
-                            | | | |     |                    |   |
-                            | | | |     V                    |   |
-                            | | | +->+-----+                 |   |
-                            | | |    |     |                 | S |
-                            | | |    |     |                 |   |
-                            | | |    | AES |                 | c |
-                            | | |    |     |                 |   |
-                            | | |    |     |                 | r |
-                            | | +--->+-----+                 |   |
-                            | |         |                    | a |
-                            | |         +------------------->|   |
-                            | |         .                    | t |
-                            | |         .                    |   |
-                            | |         .                    | c |
-                            | |         +------------------->|   |
-                            | |         |                    | h |
-                            | |         V                    |   |
-                            | +----->+-----+                 | p |
-                            |        |     |                 |   |
-                            |        |     |                 | a |
-                            |        | AES |                 |   |
-                            |        |     |                 | d |
-                            |        |     |                 |   |
-                            +------->+-----+                 |   |
-                                        |                    |   |
-                                        +------------------->|   |
-                                                             |   |
-                                                             +---+
-\end{verbatim}
-
-Successivamente farò un immagine su questa cosa, ricordatemelo.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width = 1\textwidth]{image_pt1.png}
+  \caption{Diagramma inizializzazione scratchpad CryptoNight}
+  \label{fig:my_label}
+\end{figure}
 
 \subsection{Seconda parte: Loop
 memory-hard}\label{seconda-parte-loop-memory-hard}
@@ -251,59 +197,14 @@ nel loop principale, composte da quattro passaggi:
   utilizzato come nuova variabile \texttt{b}.
 \end{enumerate}
 
-Il diagramma presente illustra le operazioni eseguite nel loop
-\emph{memory-hard}:
 
-\begin{verbatim}
-   +-------------------------------------------------------------+
-   |                         Final state                         |
-   +-------------+--------------+---------------+----------------+
-   | Bytes 0..31 | Bytes 32..63 | Bytes 64..191 | Bytes 192..199 |
-   +-------------+--------------+---------------+----------------+
-          |             |
-          |   +-----+   |
-          +-->| XOR |<--+
-              +-----+
-               |   |
-          +----+   +----+
-          |             |
-          V             V
-        +---+         +---+
-        | a |         | b |
-        +---+         +---+
-          |             |
-   --------------------- REPEAT 524288 TIMES ---------------------
-          |             |                            address +---+
-          +-------------|----------------------------------->|   |
-          |   +-----+   |                               read |   |
-          +-->| AES |<--|------------------------------------|   |
-          |   +-----+   V                                    |   |
-          |      |   +-----+                                 | S |
-          |      +-->| XOR |                                 |   |
-          |      |   +-----+                           write | c |
-          |      |      |    +------------------------------>|   |
-          |      |      +----+                       address | r |
-          |      +------------------------------------------>|   |
-          |      |  +-----------+                       read | a |
-          |      +->| 8byte_mul |<--+------------------------|   |
-          |      |  +-----------+   |                        | t |
-          |      |        |         |                        |   |
-          |      |        V         |                        | c |
-          |      |  +-----------+   |                        |   |
-          +------|->| 8byte_add |   |                        | h |
-                 |  +-----------+   |                        |   |
-                 |        |         |                  write | p |
-                 |        +---------|----------------------->|   |
-                 |        |         |                        | a |
-                 |        V         |                        |   |
-                 |     +-----+      |                        | d |
-                 |     | XOR |<-----+                        |   |
-                 |     +-----+                               |   |
-                 +------+ |                                  |   |
-          +-------------|-+                                  |   |
-          |             |                                    +---+
-   -------------------------- END REPEAT -------------------------
-\end{verbatim}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width = 1\textwidth]{image_pt2.png}
+  \caption{Diagramma loop memory-hard CryptoNight}
+  \label{fig:my_label}
+\end{figure}
 
 \subsection{Terza parte: Calcolo del
 risultato}\label{terza-parte-calcolo-del-risultato}
@@ -346,82 +247,12 @@ funzione di hash:
 \end{itemize}
 
 L'output di questa funzione di hash viene applicato al Keccak state, e
-l'hash risultante è l'output di CryptoNight. Il diagramma sottostante
-rappresenta il calcolo del risultato:
-\begin{verbatim}
- +-------------------------------------------------------------+
-   |                         Final state                         |
-   +-------------+--------------+---------------+----------------+
-   | Bytes 0..31 | Bytes 32..63 | Bytes 64..191 | Bytes 192..199 |
-   +-------------+--------------+---------------+----------------+
-         |                |             |                |
-         |       +--------+             |                |
-         |       V        |             |                |
-         |+-------------+ |             |                |
-         || Round key 0 |-|---+---+     |                |
-         |+-------------+ |   |   |     |                |
-         ||      .      | |   |   |     |                |
-         ||      .      | |   |   |     |                |
-         ||      .      | |   |   |     |                |
-         |+-------------+ |   |   |     |                |
-   +---+ || Round key 9 |-|-+-|-+ |     V                |
-   |   | |+-------------+ | | | | |  +-----+             |
-   |   |-|----------------|-|-|-|-|->| XOR |             |
-   |   | |                | | | | |  +-----+             |
-   | S | |                | | | | |     |                |
-   |   | |                | | | | |     V                |
-   | c | |                | | | | +->+-----+             |
-   |   | |                | | | |    |     |             |
-   | r | |                | | | |    |     |             |
-   |   | |                | | | |    | AES |             |
-   | a | |                | | | |    |     |             |
-   |   | |                | | | |    |     |             |
-   | t | |                | | | +--->+-----+             |
-   |   | |                | | |         |                |
-   | c | |                | | |         V                |
-   |   | |                | | |      +-----+             |
-   | h |-|----------------|-|-|----->| XOR |             |
-   |   | |                | | |      +-----+             |
-   | p | |                | | |         |                |
-   |   | |                | | |         .                |
-   | a | |                | | |         .                |
-   |   | |                | | |         .                |
-   | d | |                | | |         |                |
-   |   | |                | | |         V                |
-   |   | |                | | |      +-----+             |
-   |   |-|----------------|-|-|----->| XOR |             |
-   |   | |                | | |      +-----+             |
-   +---+ |                | | |         |                |
-         |                | | |         V                |
-         |                | | +----->+-----+             |
-         |                | |        |     |             |
-         |                | |        |     |             |
-         |                | |        | AES |             |
-         |                | |        |     |             |
-         |                | |        |     |             |
-         |                | +------->+-----+             |
-         |                |             |                |
-         V                V             V                V
-   +-------------+--------------+---------------+----------------+
-   | Bytes 0..31 | Bytes 32..63 | Bytes 64..191 | Bytes 192..199 |
-   +-------------+--------------+---------------+----------------+
-   |                       Modified state                        |
-   +-------------------------------------------------------------+
-                                  |
-                                  V
-                            +----------+
-                            | Keccak-f |
-                            +----------+
-                             |    |
-                 +-----------+    |
-                 |                |
-                 V                V
-          +-------------+  +-------------+
-          | Select hash |->| Chosen hash |
-          +-------------+  +-------------+
-                                  |
-                                  V
-                          +--------------+
-                          | Final result |
-                          +--------------+
-\end{verbatim}
+l'hash risultante è l'output di CryptoNight. I diagrammi sottostanti rappresentano le operazioni
+appena descritte graficamente.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width = 1\textwidth]{image_pt3.png}
+  \caption{Diagramma calcolo del risultato dell'algoritmo CryptoNight}
+  \label{fig:my_label}
+\end{figure}
