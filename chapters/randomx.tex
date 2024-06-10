@@ -74,3 +74,185 @@ Per utilizzare la \textbf{memoria esterna} così come i controller di memoria on
 \end{itemize}
 
 Idealmente, la dimensione del Dataset dovrebbe essere di almeno 4 GiB. Tuttavia, a causa dei vincoli sul tempo di verifica la dimensione utilizzata da RandomX è stata selezionata a 2080 MiB.
+
+\section{Architettura della macchina virtuale}
+
+Questa sezione descrive la progettazione della macchina virtuale (VM) di RandomX.
+
+\subsection{Set di istruzioni}
+
+RandomX utilizza una codifica delle istruzioni a lunghezza fissa con 8 byte per istruzione. Questo permette di includere un valore immediato a 32 bit nella parola dell'istruzione.
+
+\subsection{Programma}
+
+Il programma eseguito dalla VM ha la forma di un loop composto da 256 istruzioni casuali.
+
+\begin{itemize}
+  \item 256 istruzioni sono sufficientemente lunghe da fornire un gran numero di programmi possibili e abbastanza spazio per i branch. Il numero di programmi diversi che possono essere generati è limitato a $2^{512} = 1.3 \times 10^{154}$, che è il numero di valori di seme possibili del generatore casuale.
+  \item 256 istruzioni sono abbastanza brevi affinché le CPU ad alte prestazioni possano eseguire una iterazione in un tempo simile a quello necessario per recuperare i dati dalla DRAM. Questo è vantaggioso perché permette di sincronizzare e prefetchare completamente gli accessi al Dataset (vedi capitolo 2.9).
+  \item Poiché il programma è un loop, può sfruttare la $\mu$op cache che è presente in alcune CPU x86. Eseguire un loop dalla $\mu$op cache permette alla CPU di spegnere i decoder delle istruzioni x86, il che dovrebbe aiutare a equilibrare l'efficienza energetica tra x86 e architetture con decodifica delle istruzioni semplice.
+\end{itemize}
+
+\subsection{Registri}
+
+La VM utilizza 8 registri interi e 12 registri floating-point. Questo è il massimo che può essere allocato come registri fisici in x86-64, che ha il minor numero di registri architetturali tra le comuni architetture CPU a 64 bit. Utilizzare più registri metterebbe le CPU x86 in svantaggio poiché dovrebbero utilizzare la memoria per memorizzare i contenuti dei registri della VM.
+
+\subsection{Operazioni intere}
+
+RandomX utilizza tutte le operazioni intere primitive che hanno un'elevata entropia di output: addizione (IADD\_RS, IADD\_M), sottrazione (ISUB\_R, ISUB\_M, INEG\_R), moltiplicazione (IMUL\_R, IMUL\_M, IMULH\_R, IMULH\_M, ISMULH\_R, ISMULH\_M, IMUL\_RCP), exclusive or (IXOR\_R, IXOR\_M) e rotazione (IROR\_R, IROL\_R).
+
+\subsection{Operazioni floating-point}
+
+RandomX utilizza operazioni floating-point (virgola mobile) a doppia precisione, che sono supportate dalla maggior parte delle CPU e richiedono hardware più complesso rispetto alla singola precisione. Tutte le operazioni vengono eseguite come operazioni vettoriali a 128 bit, anch'esse supportate da tutte le principali architetture CPU.
+
+RandomX utilizza cinque operazioni garantite dallo standard IEEE 754 per dare risultati arrotondati correttamente: addizione, sottrazione, moltiplicazione, divisione e radice quadrata. Tutte le 4 modalità di arrotondamento definite dallo standard vengono utilizzate.
+
+\subsection{Branch}
+
+Le CPU moderne investono molta area del die e energia per gestire i branch. Questo include:
+
+\begin{itemize}
+  \item Branch predictor unit
+  \item Stati di checkpoint/rollback che permettono alla CPU di recuperare in caso di una predizione errata del branch.
+\end{itemize}
+
+Per sfruttare i progetti speculativi, i programmi casuali dovrebbero contenere branch. Tuttavia, se la predizione dei branch fallisce, le istruzioni eseguite speculativamente vengono scartate, il che comporta una certa quantità di energia sprecata con ogni predizione errata. Pertanto dovremmo mirare a minimizzare il numero di predizioni errate.
+
+Inoltre, i branch nel codice sono essenziali perché riducono significativamente il numero di ottimizzazioni statiche che possono essere effettuate. Ad esempio, considera la seguente sequenza di istruzioni x86:
+\begin{verbatim}
+    ...
+branch_target_00:
+    ...
+    xor r8, r9
+    test r10, 2088960
+    je branch_target_00
+    xor r8, r9
+    ...
+\end{verbatim}
+Le operazioni XOR normalmente si annullerebbero, ma non possono essere ottimizzate via a causa del branch perché il risultato sarà diverso se il branch viene preso. Analogamente, l'istruzione ISWAP\_R potrebbe essere sempre ottimizzata staticamente se non fosse per i branch.
+
+In generale, i branch casuali devono essere progettati in modo tale che:
+
+1. Non siano possibili loop infiniti.
+2. Il numero di branch predetti erroneamente sia piccolo.
+3. La condizione del branch dipenda da un valore a runtime per disabilitare le ottimizzazioni statiche del branch.
+
+\subsection{Parallelismo a livello di istruzione}
+
+Le CPU migliorano le loro prestazioni utilizzando diverse tecniche che sfruttano il parallelismo a livello di istruzione del codice eseguito. Queste tecniche includono:
+
+\begin{itemize}
+  \item Avere più unità di esecuzione che possono eseguire operazioni in parallelo (\textit{superscalar execution}).
+  \item Eseguire istruzioni non nell'ordine del programma, ma nell'ordine della disponibilità degli operandi (\textit{out-of-order execution}).
+  \item Prevedere quale direzione prenderanno i branch per migliorare i benefici sia dell'esecuzione superscalare che di quella out-of-order.
+\end{itemize}
+
+RandomX beneficia di tutte queste ottimizzazioni.
+
+\subsection{Scratchpad}
+
+Lo Scratchpad è una "zona di lavoro" utilizzata come memoria di lettura-scrittura. La sua dimensione è stata selezionata per adattarsi completamente nella cache della CPU.
+
+\subsection{Dataset}
+
+Poiché lo Scratchpad viene solitamente memorizzato nella cache della CPU, solo gli accessi al Dataset utilizzano i controller di memoria.
+
+RandomX legge casualmente dal Dataset una volta per iterazione del programma (16384 volte per risultato hash). Poiché il Dataset deve essere memorizzato nella DRAM, fornisce un limite naturale alla parallelizzazione, poiché la DRAM non può effettuare più di circa 25 milioni di accessi casuali al secondo per gruppo di banchi. Ogni gruppo di banchi indirizzabili separatamente consente un throughput di circa 1500 H/s.
+
+Tutti gli accessi al Dataset leggono una linea di cache della CPU (64 byte) e sono completamente prefetchati. Il tempo per eseguire una iterazione del programma descritta nel capitolo 4.6.2 della Specifica è circa lo stesso della latenza tipica di accesso alla DRAM (50-100 ns).
+
+\section{Funzioni personalizzate}
+
+\subsection{AesGenerator1R}
+
+\texttt{AesGenerator1R} è stato progettato per la generazione più veloce possibile di dati pseudocasuali per riempire lo Scratchpad. Sfrutta l'AES accelerato via hardware nelle CPU moderne. Viene eseguito solo un round AES per ogni 16 byte di output, il che si traduce in un throughput superiore a 20 GB/s nella maggior parte delle CPU moderne.
+
+AesGenerator1R fornisce una buona distribuzione dell'output a condizione che venga inizializzato con uno stato iniziale sufficientemente 'casuale' (vedi Appendice F).
+
+\subsection{AesGenerator4R}
+
+\texttt{AesGenerator4R} utilizza 4 round AES per generare dati pseudocasuali per l'inizializzazione del Program Buffer. Poiché 2 round AES sono sufficienti per l'effetto valanga completo di tutti i bit di input, AesGenerator4R ha eccellenti proprietà statistiche (vedi Appendice F) mantenendo comunque prestazioni molto buone.
+
+La natura reversibile di questo generatore non è un problema poiché lo stato del generatore viene sempre inizializzato utilizzando l'output di una funzione di hash non reversibile (Blake2b).
+
+\subsection{AesHash1R}
+
+\texttt{AesHash} è stato progettato per il calcolo più veloce possibile dell'impronta digitale dello Scratchpad. Interpreta lo Scratchpad come un insieme di chiavi di round AES, quindi è equivalente alla crittografia AES con 32768 round. Vengono eseguiti due round extra alla fine per garantire l'effetto valanga di tutti i bit dello Scratchpad in ogni lane.
+
+La natura reversibile di AesHash1R non è un problema per due motivi principali:
+
+\begin{itemize}
+  \item Non è possibile controllare direttamente l'input di AesHash1R.
+  \item L'output di AesHash1R viene passato alla funzione di hash Blake2b, che non è reversibile.
+\end{itemize}
+
+\subsection{SuperscalarHash}
+
+\texttt{SuperscalarHash} è stato progettato per consumare quanta più energia possibile mentre la CPU attende che i dati vengano caricati dalla DRAM. La latenza target di 170 cicli corrisponde alla latenza usuale della DRAM di 40-80 ns e alla frequenza di clock di 2-4 GHz. I dispositivi ASIC progettati per il mining in modalità leggera con memoria a bassa latenza saranno limitati da SuperscalarHash durante il calcolo degli elementi del Dataset e la loro efficienza sarà compromessa dall'alto consumo energetico di SuperscalarHash.
+
+La funzione SuperscalarHash media contiene un totale di 450 istruzioni, di cui 155 sono moltiplicazioni a 64 bit. In media, la catena di dipendenze più lunga è composta da 95 istruzioni. Un progetto ASIC per il mining in modalità leggera, con 256 MiB di memoria on-die e una latenza di 1 ciclo per tutte le operazioni, avrà bisogno in media di 95 * 8 = 760 cicli per costruire un elemento del Dataset, assumendo una parallelizzazione illimitata. Dovrà eseguire 155 * 8 = 1240 moltiplicazioni a 64 bit per elemento, il che consumerà energia comparabile al caricamento di 64 byte dalla DRAM.
+
+
+
+\section{Descrizione dell'algoritmo}
+
+L'algoritmo RandomX accetta due valori di input:
+
+\begin{itemize}
+    \item Stringa \texttt{K} di dimensione 0-60 byte (chiave)
+    \item Stringa \texttt{H} di lunghezza arbitraria (valore da hashare)
+\end{itemize}
+
+e produce un risultato di 256 bit \texttt{R}.
+
+L'algoritmo consiste nei seguenti passaggi:
+
+\begin{enumerate}
+    \item Il Dataset viene inizializzato utilizzando il valore della chiave \texttt{K}.
+    \item Il seed di 64 byte \texttt{S} viene calcolato come \texttt{S = Hash512(H)}.
+    \item Sia \texttt{gen1 = AesGenerator1R(S)}.
+    \item Lo Scratchpad viene riempito con \texttt{RANDOMX\_SCRATCHPAD\_L3} byte casuali utilizzando il generatore \texttt{gen1}.
+    \item Sia \texttt{gen4 = AesGenerator4R(gen1.state)} (usare lo stato finale di \texttt{gen1}).
+    \item Il valore del registro della VM \texttt{fprc} è impostato a 0 (modalità di arrotondamento predefinita).
+    \item La VM viene programmata utilizzando \texttt{128 + 8 * RANDOMX\_PROGRAM\_SIZE} byte casuali utilizzando il generatore \texttt{gen4}.
+    \item La VM viene eseguita.
+    \item Un nuovo seed di 64 byte viene calcolato come \texttt{S = Hash512(RegisterFile)}.
+    \item Imposta \texttt{gen4.state = S} (modifica lo stato del generatore).
+    \item I passaggi 7-10 vengono eseguiti un totale di \texttt{RANDOMX\_PROGRAM\_COUNT} volte. L'ultima iterazione salta i passaggi 9 e 10.
+    \item L'impronta digitale dello Scratchpad viene calcolata come \texttt{A = AesHash1R(Scratchpad)}.
+    \item I byte 192-255 del Registro File vengono impostati al valore di \texttt{A}.
+    \item Il risultato viene calcolato come \texttt{R = Hash256(RegisterFile)}.
+\end{enumerate}
+
+L'input della funzione \texttt{Hash512} nel passaggio 9 è il seguente:
+
+\begin{verbatim}
+ +---------------------------------+
+ |         registri r0-r7          | (64 byte)
+ +---------------------------------+
+ |         registri f0-f3          | (64 byte)
+ +---------------------------------+
+ |         registri e0-e3          | (64 byte)
+ +---------------------------------+
+ |         registri a0-a3          | (64 byte)
+ +---------------------------------+
+\end{verbatim}
+
+L'input della funzione \texttt{Hash256} nel passaggio 14 è il seguente:
+
+\begin{verbatim}
+ +---------------------------------+
+ |         registri r0-r7          | (64 byte)
+ +---------------------------------+
+ |         registri f0-f3          | (64 byte)
+ +---------------------------------+
+ |         registri e0-e3          | (64 byte)
+ +---------------------------------+
+ |      AesHash1R(Scratchpad)      | (64 byte)
+ +---------------------------------+
+\end{verbatim}
+
+
+% TODO
+% aggiungere due ordini di profondità di design.md OK
+% aggiungere  algorithm description di specs.md
