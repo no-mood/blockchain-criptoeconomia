@@ -200,18 +200,14 @@ La dimensione dello scratchpad è definita a 2MB in quanto:
 
 
 
-
-
-
-\subsubsection{Primitive crittografiche utilizzate}\label{primitive-crittografiche-utilizzate}
-CryptoNight è basato su delle primitive crittografiche specifiche, composte da 
+\subsubsection{Primitive crittografiche utilizzate} \label{primitive-crittografiche-utilizzate}
+CryptoNight è basato su delle primitive crittografiche specifiche, composte da: 
 \begin{itemize}
-  \item
-  Cifratura AES a 256bit
+  \item Cifratura AES a 256bit
   \item 5 funzioni di hash, finaliste
   nella competizione per la ricerca di un nuovo standard per le funzioni
   di hash del 2012 condotto dal NIST:
-  \begin{itemize}
+  \begin{itemize}[noitemsep,topsep=0pt]
     \item Keccak
     \item BLAKE
     \item Groest1
@@ -220,11 +216,9 @@ CryptoNight è basato su delle primitive crittografiche specifiche, composte da
   \end{itemize}
 \end{itemize}
 
-\subsection{Prima parte: Inizializzazione dello
-scratchpad}\label{prima-parte-inizializzazione-dello-scratchpad}
-
+\subsection{Prima parte: Inizializzazione dello scratchpad} \label{prima-parte-inizializzazione-dello-scratchpad}
 L'input della funzione di hash (in Monero, ad esempio, di dimensione 80
-bytes) viene passato nella funzione di hash di Keccak\cite{bertoni2011keccak}. Viene scelta con
+bytes) viene passato nella funzione di hash di Keccak \cite{bertoni2011keccak}. Viene scelta con
 \texttt{b\ =\ 1600}, quindi con dimensione dell'output di 1600 bit o 200
 bytes e con dimensione del digest di 512 bits o 64 bytes con il
 parametro \texttt{c\ =\ 512}. Questi byte saranno definiti come
@@ -232,7 +226,7 @@ parametro \texttt{c\ =\ 512}. Questi byte saranno definiti come
 
 I byte \texttt{0..31} risultanti dall'output della funzione vengono
 scelti come chiave per l'algoritmo di cifratura AES-256. La chiave non
-viene utilizzata così com'è, ma viene espansa\cite{standard2001federal} in 10 sotto-chiavi, con lo
+viene utilizzata così com'è, ma viene espansa \cite{standard2001federal} in 10 sotto-chiavi, con lo
 scopo di rendere l'algoritmo più sicuro, utilizzando più di una chiave
 AES per cifrare. L'espansione viene fatta dividendo la chiave in 8
 parole di 4 byte ciascuna. Per generare le due parole rimaste al fine
@@ -247,12 +241,11 @@ l'espansione della chiave è presente qui.
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[width = 0.60\textwidth]{image8.png}
+  \includegraphics[width=0.6\textwidth]{image8.png}
   \caption{Pseudoimplemetazione codice cifratura}
 \end{figure}
-\newpage
 
-Viene allocato uno \textbf{scratchpad} di 2097152 bytes.\cite{crypto_note_standard_cryptonight}
+Viene allocato uno \textbf{scratchpad} di 2097152 bytes \cite{crypto_note_standard_cryptonight}.
 Dall'output di Keccak vengono estratti i byte \texttt{64...191} e divisi
 in 8 blocchi di 16 byte ciascuno. Ogni blocco viene cifrato utilizzando
 il seguente codice:
@@ -267,25 +260,20 @@ il seguente codice:
   \end{algorithm}
 
 
-\subsubsection{Funzione cifratura AES}\label{funzione-cifratura-aes}
-
+\subsubsection{Funzione cifratura AES} \label{funzione-cifratura-aes}
 La funzione \texttt{aes\_round} esegue un round di cifratura AES, che
 consiste nell'eseguire i passaggi seguenti sul blocco:
 
 \begin{itemize}
-\item
-  SubBytes: ogni byte del blocco viene sostituito con un valore criptato
-  utilizzando una tabella di sostituzione \emph{S-Box}.
-\item
-  ShiftRows: le righe del blocco vengono spostate di una posizione.
-\item
-  MixColumns: le colonne del blocco vengono mescolate utilizzando una
-  matrice 4x4 nota come MDS, progettata per essere difficile
-  da invertire.
-\item
-  Infine, il risultato è XORato con la chiave specifica per quel round.
-  A differenza della classica funzione AES per cifrare, il primo e
-  l'ultimo round quando si usano le \emph{round-keys} non sono speciali.
+    \item \textbf{SubBytes}: ogni byte del blocco viene sostituito con un valore criptato
+    utilizzando una tabella di sostituzione \emph{S-Box}.
+    \item \textbf{ShiftRows}: le righe del blocco vengono spostate di una posizione.
+    \item \textbf{MixColumns}: le colonne del blocco vengono mescolate utilizzando una
+    matrice 4x4 nota come MDS, progettata per essere difficile
+    da invertire.
+    \item Infine, il risultato è \textbf{XOR}ato con la chiave specifica per quel round.
+    A differenza della classica funzione AES per cifrare, il primo e
+    l'ultimo round quando si usano le \emph{round-keys} non sono speciali.
 \end{itemize}
 
 I blocchi che ne risultano vengono riportati nei primi 128 byte dello
@@ -297,21 +285,28 @@ pseudo-randomici. I byte \texttt{64..191}, che chiameremo
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[width = 1\textwidth]{image_pt1.png}
+  \includegraphics[width=0.62\textwidth]{image_pt1.png}
   \caption{Diagramma inizializzazione scratchpad CryptoNight}
-  \label{fig:my_label}
 \end{figure}
 
-\subsection{Seconda parte: Loop
-memory-hard}\label{seconda-parte-loop-memory-hard}
+\subsection{Seconda parte: Loop memory-hard}\label{seconda-parte-loop-memory-hard}
+La seconda parte, precedentemente illustrata in sintesi, viene riproposta al fine di fornire 
+una panoramica completa dell'algoritmo in questa sezione e per garantire una comprensione chiara 
+attraverso la ripetizione.
 
-La seconda parte si compone di un algoritmo che mantiene lo stato
-composto da 52488 iterazioni. Si utilizzano operazioni
+Questa parte consiste in 52.488 iterazioni, dove vengono utilizzate operazioni
 CPU-friendly, come la cifratura AES, XOR, moltiplicazioni e addizioni di
-8 byte, per avere come unico
+8 byte.
 
-Prima di eseguire il loop utilizzato per rendere questa funzione di hash
-\emph{memory-hard}, viene eseguito lo XOR sui byte \texttt{0..31} e i
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.85\textwidth]{image_pt2.png}
+    \caption{Diagramma loop memory-hard CryptoNight}
+\end{figure}
+
+
+Prima di eseguire il loop, viene eseguito lo XOR sui byte \texttt{0..31} e i
 byte \texttt{32..63} dell'output dell'hashing Keccak. I 32 byte
 risultanti vengono utilizzati per inizializzare due variabili da 16 byte
 ciascuna, \texttt{a} e \texttt{b}. Queste variabili vengono utilizzate
@@ -362,32 +357,25 @@ nel loop principale, composte da quattro passaggi:
 
 
 
-\begin{figure}[h!]
-  \centering
-  \includegraphics[width = 1\textwidth]{image_pt2.png}
-  \caption{Diagramma loop memory-hard CryptoNight}
-  \label{fig:my_label}
-\end{figure}
 
-\subsection{Terza parte: Calcolo del
-risultato}\label{terza-parte-calcolo-del-risultato}
-
+\subsection{Terza parte: Calcolo del risultato}\label{terza-parte-calcolo-del-risultato}
 Dopo aver effettuato le operazioni memory-hard, i byte \texttt{32..63}
 dati dall'hashing effettuato con Keccak vengono espansi in 10
 \emph{round-keys} come nella prima parte.
 
 I byte \texttt{64..191} dello stesso hashing vengono presi e viene
 effettuato uno XOR con i primi 128 byte dello scratchpad. Il risultato
-di questa operazione viene criptato con la funzione \texttt{aes\_round}
+di questa operazione viene cifrato con la funzione \texttt{aes\_round}
 come nella prima parte, ma con le chiavi ricavate dall'espansione dei
-byte \texttt{32..63}.\\
+byte \texttt{32..63}.
+
 Il risultato di questa cifratura viene passato da uno XOR con i 128
 bytes successivi dello scratchpad, cifrati nuovamente con la stessa
 funzione, fino ad arrivare agli ultimi 128 byte dello scratchpad. Dopo
 aver cifrato gli ultimi 128 byte viene effettuato lo XOR con gli ultimi
 128 byte dello scratchpad.
 
-I byte \texttt{64..191} del **Keccak state* vengono sostituiti con Il
+I byte \texttt{64..191} del \textbf{Keccak state} vengono sostituiti con il
 risultato dell'operazione effettuata in precedenza. Tutti i 200 byte
 dello stato di Keccak vengono passati da una permutazione, chiamata
 \emph{Keccak-f}, con parametro \texttt{b\ =\ 1600}, l'implementazione
@@ -415,7 +403,6 @@ appena descritte graficamente.
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[width = 1\textwidth]{image_pt3.png}
+  \includegraphics[width=0.85\textwidth]{image_pt3.png}
   \caption{Diagramma calcolo del risultato dell'algoritmo CryptoNight}
-  \label{fig:my_label}
 \end{figure}
