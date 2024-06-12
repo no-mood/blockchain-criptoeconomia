@@ -169,7 +169,7 @@ può essere utilizzata per generare una firma anonima unica. Nel caso di
 un tentativo di doppia spesa, queste due firme saranno collegate, ma non
 è necessario rivelare l'identità del firmatario.
 
-% TODO: che algoritmo? \subsubsection{One-Time Ring Signature}
+\subsubsection{Introduzione alla One-Time Ring Signature}
 Alla base dell'algoritmo di firma si usa EdDSA, sviluppato e
 implementato da \emph{D.J. Bernstein} \cite{bernstein_et_al}, parametri comuni di
 dominio sono: 
@@ -208,7 +208,7 @@ termini che non dovrebbero essere confusi con le entità di Bitcoin:
   \item
     \textbf{standard} \textbf{address} è una rappresentazione di una
     chiave utente pubblica mediante una stringa digitabile
-    dall\textquotesingle utente con correzione degli errori.
+    dall'utente con correzione degli errori.
   \end{itemize}
 
 Contrariamente al modello di Bitcoin, in cui un utente possiede sia le
@@ -222,7 +222,8 @@ fondi (utilizzando la sua chiave privata unica). Il destinatario può
 spendere usando una firma ad anello, mantenendo anonima la sua proprietà
 e la sua effettiva spesa.
 
-\subsection{Funzionamento delle transazioni}\label{funzionamento-delle-transazioni}
+
+\subsection{Transazioni in CryptoNote} \label{funzionamento-delle-transazioni}
 Gli indirizzi Bitcoin classici, una volta pubblicati, diventano
 identificatori inequivocabili per ogni pagamento in entrata,
 collegandoli tra loro e associandoli al destinatario.
@@ -231,26 +232,24 @@ collegandoli tra loro e associandoli al destinatario.
   \centering
   \includegraphics[width=0.5\textwidth]{image6.png}
   \caption{Modello chiave/transazione tradizionale di Bitcoin.}
-  \label{fig:my_label}
 \end{figure}
 
-Viene proposta una soluzione che consente all\textquotesingle utente di
-pubblicare un singolo indirizzo e ricevere pagamenti incondizionati non
-collegabili. La destinazione di ciascun output (di default) è una chiave
-pubblica unica, derivata dall\textquotesingle indirizzo del destinatario
-e dall\textquotesingle iniezione di dati casuali da parte del
-mittente.\\
+Come anticipato precedentemente, in CryptoNote viene proposta una soluzione che consente all'utente di
+pubblicare un singolo indirizzo e ricevere pagamenti non collegabili su esso. 
+La destinazione di ciascun output (di default) è una chiave
+pubblica unica, derivata dall'indirizzo del destinatario
+e dall'inserimento di dati casuali da parte del
+mittente.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.5\textwidth]{image7.png}
   \caption{Modello di transazione CryptoNote.}
-  \label{fig:my_label}
 \end{figure}
 
 Innanzitutto, il mittente esegue il protocollo di scambio Diffie-Hellman
 per ottenere un segreto condiviso dai suoi dati e da una metà
-dell\textquotesingle indirizzo. Successivamente calcola una chiave di
+dell'indirizzo. Successivamente calcola una chiave di
 destinazione monouso, utilizzando questi segreti e la seconda metà. Per
 questi due passaggi sono necessarie due chiavi ec-keys del destinatario;
 quindi, un indirizzo CryptoNote standard è grande quasi il doppio di un
@@ -269,7 +268,7 @@ Una transazione standard procede come segue:
   Alice genera un numero casuale $r \in [1,l-1]$ e calcola la chiave
   pubblica one-time $P=H_s(rA)G+B$.
 \item
-  Alice usa $P$ come chiave di destinazione per l\textquotesingle output e
+  Alice usa $P$ come chiave di destinazione per l'output e
   inserisce anche il valore $R=rG$ (come parte del protocollo
   Diffie-Hellman) da qualche parte nella transazione. Alice può creare
   altri output con chiavi pubbliche uniche: chiavi diverse dei
@@ -280,7 +279,6 @@ Una transazione standard procede come segue:
     \centering
     \includegraphics[width=0.5\textwidth]{image3.png}
     \caption{Standard transaction structure.}
-    \label{fig:my_label}
   \end{figure}
 \item
   Bob controlla ogni transazione in arrivo con la sua chiave privata $(a,
@@ -295,7 +293,6 @@ Una transazione standard procede come segue:
     \centering
     \includegraphics[width=0.5\textwidth]{image4.png}
     \caption{Check della transazione in ingresso.}
-    \label{fig:my_label}
   \end{figure}
 \end{enumerate}
 
@@ -304,9 +301,8 @@ pubbliche monouso che non possono essere collegate per un osservatore
 esterno.
 
 \subsubsection{Firme ad anello}\label{firme-ad-anello}
-
 Un protocollo basato su firme ad anello monouso consente agli utenti di
-ottenere un\textquotesingle anonimato incondizionato. Purtroppo, i tipi
+ottenere un'anonimato incondizionato. Purtroppo, i tipi
 ordinari di firme crittografiche permettono di tracciare le transazioni
 ai rispettivi mittenti e destinatari. La \emph{one-time ring signature}
 usa diverse tipi di firme, consiste di quattro algoritmi (\textbf{GEN,
@@ -344,14 +340,14 @@ sotto la stessa coppia di chiavi.
   \item
     \textbf{GEN}: Il firmatario sceglie casualmente una chiave segreta $x \in
     [1,l-1]$ e calcola la chiave pubblica corrispondente $P=xG$. Inoltre,
-    calcola un\textquotesingle altra chiave pubblica $I=xHp(P)$ chiamata
+    calcola un'altra chiave pubblica $I=xHp(P)$ chiamata
     "immagine della chiave".
   \item
     \textbf{SIG}: Il firmatario genera una firma ad anello one-time con
     una prova a conoscenza zero non interattiva. Seleziona un sottoinsieme
     casuale $S'$ di $n - 1$ chiavi pubbliche di altri utenti $P_i$,
-    la propria coppia di chiavi $(x, P)$ e l\textquotesingle immagine della
-    chiave $I$. Sia $1 \leq s \leq n$ l\textquotesingle indice segreto del firmatario in
+    la propria coppia di chiavi $(x, P)$ e l'immagine della
+    chiave $I$. Sia $1 \leq s \leq n$ l'indice segreto del firmatario in
     $S$ (in modo che la sua chiave sia $P_s$).\\
     Si sceglie casualmente un elemento casuale da $\{q_i | i = 1
     ... n\}$ e $\{w_i | i = 1 ... n, i \neq s\}$ da $(1 ... l)$ e effettua
@@ -384,17 +380,17 @@ R_i' = r_iH_p(P_i) + c_iI
 \[\sum_{i=1}^{n} ci =^? H_s(m,L_1',...,L_n',R_1',...R_n') \mod l \]
 
 Se questa uguaglianza è vera, chi verifica esegue
-l\textquotesingle algoritmo \textbf{LNK}, altrimenti respinge la firma.
+l'algoritmo \textbf{LNK}, altrimenti respinge la firma.
 \item 
   \textbf{LNK}: Chi verifica controlla se I è stata utilizzata in firme
-passate (questi valori sono memorizzati nell\textquotesingle insieme I).
+passate (questi valori sono memorizzati nell'insieme I).
 Un doppio utilizzo significa che sono state prodotte due firme con la
-stessa chiave segreta.\\
+stessa chiave segreta.
 \end{itemize}
+
 Meccanismo del protocollo: utilizzando L-commitments, il firmatario
 dimostra di conoscere un certo $x$ tale che almeno una $Pi = xG$.
-Per rendere
-questa prova non ripetibile introduciamo l\textquotesingle immagine
+Per rendere questa prova non ripetibile introduciamo l'immagine
 della chiave come $I=xHp(P)$. Il firmatario utilizza gli stessi
 coefficienti $(r_i,c_i)$ per dimostrare quasi la stessa cosa: egli conosce
 un certo $x$ tale che almeno uno $Hp(P_i)=I \cdot x^{-1}$. Se $x \rightarrow I$ è iniettiva:
@@ -403,22 +399,23 @@ un certo $x$ tale che almeno uno $Hp(P_i)=I \cdot x^{-1}$. Se $x \rightarrow I$ 
 \item 
   Nessuno può recuperare la chiave pubblica dall\'immagine della chiave e identificare il firmatario.
 \item 
-  Ilfirmatario non può fare due firme con I diverse e lo stesso x.
+  Il firmatario non può fare due firme con I diverse e lo stesso x.
 \end{itemize}
 
 Con una firma ad anello one-time, Bob può efficacemente nascondere
 l'output di Alice (cioè, il suo input) tra gli altri: tutti i possibili
 spenditori saranno equiprobabili, anche se Alice non ha più informazioni
 di qualsiasi osservatore. Bob specifica n-1 outputs, non sapendo se
-alcuni di questi sono stati spesi:\\
-Un output può essere utilizzato in migliaia di firme come fattore di
+alcuni di questi sono stati spesi.
+Un output può essere quindi utilizzato in migliaia di firme come fattore di
 ambiguità e mai come obiettivo di occultamento. Il controllo di doppia
 spesa avviene nella fase LNK quando si cerca
-nell\textquotesingle insieme delle immagini di chiave utilizzate.\\
+nell'insieme delle immagini di chiave utilizzate.
+
 Bob può scegliere il grado di ambiguità autonomamente: n = 2 significa
-che avrà speso l\textquotesingle output con una probabilità del 50\%, n
+che avrà speso l'output con una probabilità del 50\%, n
 = 100 dà il 1\%. La dimensione della firma risultante è lineare O(n),
-quindi l\textquotesingle anonimato costa a Bob una dimensione di
+quindi l'anonimato costa a Bob una dimensione di
 transazione più grande e commissioni più alte.
 
 Combinando entrambi i metodi (chiavi di transazione one-time e firme ad
@@ -430,82 +427,36 @@ coppie di chiavi di transazione uniche (pi, Pi) che non possono essere
 collegate tra loro o alla sua chiave pubblica. Può spendere ognuna di
 esse, firmando ogni input con una firma ad anello non tracciabile.
 
-\subsection{Miglioramenti nella PoW rispetto a
-Bitcoin}\label{miglioramenti-nella-pow-rispetto-a-bitcoin}
 
-C'è stato anche un miglioramento dell'algoritmo di PoW, come obiettivo
-primario vi è l'abbassamento del gap tra CPU e GPU/FPGA/ASIC.\\
-Il protocollo originale di proof-of-work di Bitcoin utilizza la funzione
-SHA-256.\\
-Consiste principalmente di operatori logici di base e si basa
-esclusivamente sulla velocità computazionale del processore, quindi è
-perfettamente adatto per l\textquotesingle implementazione
-multicore/conveyer. Tuttavia, i computer moderni non sono limitati solo
+\subsection{Miglioramenti nella PoW rispetto a Bitcoin}\label{miglioramenti-nella-pow-rispetto-a-bitcoin}
+Oltre a migliorare l'aspetto della privacy, Cryptonote si prefigge anche l'obiettivo di 
+ridurre l'impiego di FPGA ed ASIC che centralizzano il mining.
+
+Il protocollo PoW originale di Bitcoin utilizza la funzione SHA-256, funzione che
+consiste in operazioni logiche di base, e si fonda sulla velocità computazionale del processore.
+Tuttavia, si noti che i computer moderni non sono limitati solo
 dal numero di operazioni al secondo, ma anche dalla dimensione della
-memoria. Mentre alcuni processori possono essere notevolmente più veloci
-di altri \cite{mining_hardware}, le dimensioni della memoria sono meno probabili
-che varino tra le macchine.\\
-L\textquotesingle idea principale è costruire un algoritmo che alloca un
-ampio blocco di dati ("scratchpad") all\textquotesingle interno della
+memoria. 
+
+Mentre alcuni processori possono essere notevolmente più veloci
+di altri \cite{mining_hardware} o possono utilizzare implementazioni multicore, 
+le dimensioni della memoria sono generalmente meno variabili tra le macchine.
+
+L'idea principale di CryptoNote è costruire un algoritmo che alloca un
+ampio blocco di dati all'interno della
 memoria e "accedere a una sequenza imprevedibile di posizioni" in esso.
 Il blocco dovrebbe essere sufficientemente grande per rendere più
 vantaggioso conservare i dati piuttosto che ricalcolarli ad ogni
-accesso. L\textquotesingle algoritmo dovrebbe inoltre impedire il
-parallelismo interno, quindi N thread simultanei dovrebbero richiedere N
-volte più memoria contemporaneamente.\\
-\emph{Dwork et al} \cite{dwork_et_al} hanno investigato e formalizzato questo
-approccio, portandoli a suggerire un\textquotesingle altra variante
-della funzione di pricing: "Mbound". Un altro lavoro appartiene a \emph{F.
-Coelho} \cite{coelho}, che ha proposto la soluzione più efficace:
-"Hokkaido". Con ogni probabilità, l\textquotesingle ultimo lavoro è
-basato sull\textquotesingle idea di ricerche pseudo-casuali in un grande
-array è l\textquotesingle algoritmo noto come \emph{scrypt} di \emph{C. Percival}
-\cite{percival}. A differenza delle funzioni precedenti, si concentra sulla
-derivazione delle chiavi e non sui sistemi di proof-of-work. Nonostante
-ciò, scrypt funziona bene come funzione di prezzo nel problema di
-conversione dell'hash parziale come SHA-256 in Bitcoin.\\
-Per ora lo script è stato applicato a Litecoin \cite{litecoin}, ma la sua
-implementazione non è veramente legata alla memoria: il rapporto ``tempo
-di accesso alla memoria / tempo complessivo'' non è abbastanza grande
-perché ogni istanza utilizza solo 128 KB, questo dunque permette ai
-miner GPU di essere 10 volte più efficienti lasciando la possibilità di
-creare dispositivi di mining efficienti e relativamente economici.\\
-CryptoNote propone quindi un nuovo algoritmo memory-bound per la
-proof-of-work. Si basa sull\textquotesingle accesso casuale a una
-memoria lenta e sottolinea la dipendenza dalla latenza. A differenza di
-scrypt, ogni nuovo blocco (lungo 64 byte) dipende da tutti i blocchi
-precedenti e non solo da uno, quindi il compromesso tra dimensione della
-memoria e velocità della CPU diventa esponenziale. Il nuovo algoritmo
-richiede circa 2 Mb per istanza per i seguenti motivi:
+accesso. L'algoritmo dovrebbe inoltre impedire il
+parallelismo interno, quindi $N$ thread simultanei dovrebbero richiedere $N$
+volte più memoria contemporaneamente.
 
-\begin{itemize}
-\item
-  Si adatta alla cache L3 (per core) dei processori moderni, che
-  diventeranno mainstream tra qualche anno;
-\item
-  Un megabyte di memoria interna è quasi una dimensione inaccettabile
-  per il moderno pipeline ASIC;
-\item
-  Le GPU possono eseguire centinaia di istanze simultanee, ma sono
-  limitate in altri modi: la memoria GDDR5 è più lenta della cache L3
-  della CPU e notevole per la sua larghezza di banda, non per la
-  velocità di accesso casuale.
-\item
-  Un\textquotesingle espansione significativa dello scratchpad
-  richiederebbe un aumento delle iterazioni, il che implica a sua volta
-  un aumento del tempo complessivo. Chiamate "pesanti" in una rete P2P
-  senza fiducia possono portare a gravi vulnerabilità, perché i nodi
-  sono obbligati a verificare il proof-of-work di ogni nuovo blocco. Se
-  un nodo impiega una quantità considerevole di tempo per ogni
-  valutazione dell\textquotesingle hash, può essere facilmente soggetto
-  a attacchi DDoS da parte di una valanga di oggetti falsi con dati di
-  lavoro arbitrari (valori di nonce).
-\end{itemize}
+Questo è esattamente ciò che è stato ottenuto grazie all'algoritmo di PoW 
+\textbf{CryptoNight}, che verrà analizzato nel prossimo capitolo.
 
-\subsection{Equità nella
-distibuzione}\label{equituxe0-nella-distibuzione}
-
-Il limite superiore per l\textquotesingle ammontare complessivo delle
+\subsection{Equità nella distribuzione} \label{equituxe0-nella-distibuzione}
+\subsubsection{Limite superiore e formula delle ricompense dei blocchi}
+Il limite superiore per l'ammontare complessivo delle
 monete digitali CryptoNote è anche digitale:
 \[\text{MSupply} = 2^{64} - 1\] unità atomiche. Questa è una restrizione
 naturale basata solo su limiti di implementazione, non su intuizioni
@@ -515,21 +466,24 @@ Per garantire la regolarità del processo di emissione, viene utilizzata
 la seguente formula per le ricompense dei blocchi: \[
 \text{BaseReward} = (\text{MSupply} - A) >> 18 \]
 
-dove A è l\textquotesingle ammontare di monete generate precedentemente
+dove A è l'ammontare di monete generate precedentemente
 
-CryptoNote contiene un algoritmo di targeting che cambia la difficoltà
+\subsubsection{Algoritmo di adattamento della difficoltà}
+CryptoNote contiene inoltre un algoritmo di targeting che cambia la difficoltà
 di ogni blocco. Questo migliora il tempo di reazione del sistema quando
 la potenza di calcolo della rete cresce o diminuisce intensamente,
 preservando un tasso di blocco costante. Il metodo originale di Bitcoin
 calcola il rapporto tra la difficoltà effettiva e quella target tra gli
 ultimi 2016 blocchi e lo utilizza come moltiplicatore per la difficoltà
 attuale. Ovviamente questo è inadatto per ricalcoli rapidi (a causa
-dell\textquotesingle inerzia elevata) e porta a oscillazioni.
-L\textquotesingle idea generale dietro l'algoritmo è sommare tutto il
+dell'inerzia elevata) e porta a oscillazioni.
+
+L'idea generale dietro l'algoritmo è sommare tutto il
 lavoro completato dai nodi e dividerlo per il tempo impiegato per
 completare il lavoro. La misura del lavoro sono i valori di difficoltà
 corrispondenti in ogni blocco.
 
+\subsubsection{Dimensione delle transazioni}
 Gli utenti pagano gli altri per memorizzare la blockchain e dovrebbero
 avere il diritto di votare per la sua dimensione. Ogni miner si
 confronta con il compromesso tra bilanciare i costi e il profitto dalle
@@ -538,7 +492,8 @@ creazione dei blocchi. Inoltre, la regola fondamentale per la dimensione
 massima del blocco è necessaria per evitare che la blockchain venga
 inondatata da transazioni fasulle, tuttavia questo valore non dovrebbe
 essere codificato duramente. Sia MN il valore mediano delle dimensioni
-degli ultimi N blocchi.\\
+degli ultimi N blocchi.
+
 Allora il "limite rigido" per la dimensione dei blocchi accettati è 2 ·
 MN.
 
@@ -557,6 +512,7 @@ Questa regola viene applicata solo quando la DimBlocco è maggiore della
 dimensione minima del blocco gratuito che dovrebbe essere vicina a \[
 \max(10\, \text{kb}, M_N \cdot 110\%) \] I miners sono autorizzati a
 creare blocchi di ``dimensioni usuali'' e persino a superarle con
-profitto quando le commissioni complessive superano la penalità.\\
+profitto quando le commissioni complessive superano la penalità.
+
 Tuttavia, è improbabile che le commissioni crescano in modo quadratico a
 differenza del valore della penalità, quindi ci sarà un equilibrio.
