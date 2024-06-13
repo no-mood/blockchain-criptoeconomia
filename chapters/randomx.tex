@@ -12,7 +12,7 @@ Per minimizzare il vantaggio di hardware specializzati come gli ASIC, già discu
 \end{itemize}
 
 \subsection{Prova di Lavoro Dinamica} 
-L'idea alla base di una \textbf{Proof of Work} basata su CPU è l'impiego di un \textit{lavoro dinamico} sfruttando il fatto che queste accettano come input non solo \textbf{dati}, come le tipiche funzioni di hash crittografiche, ma anche il \textbf{codice}. Ciò evita che le sequenza delle operazioni sia fissa e quindi più facilmente eseguibile da un circuito integrato specializzato. Una \textbf{Proof of Work dinamica} consiste in 4 steps:
+L'idea alla base di una \textbf{Proof of Work} basata su CPU è l'impiego di un \textit{lavoro dinamico} sfruttando il fatto che queste accettano come input non solo \textbf{dati}, come le tipiche funzioni di hash crittografiche, ma anche il \textbf{codice}. Ciò evita che la sequenza delle operazioni sia fissa e quindi più facilmente eseguibile da un circuito integrato specializzato. Una \textbf{Proof of Work dinamica} consiste in 4 steps:
 \begin{enumerate}
     \item Generazione di un programma casuale;
     \item Traduzione in codice macchina nativo della CPU;
@@ -48,7 +48,7 @@ L'esecuzione del programma dovrebbe utilizzare il \textbf{maggior numero} possib
 Per quanto riguarda, invece, l'elaborazione di grandi quantità di dati in modo crittograficamente sicuro, l'\textbf{Advanced Encryption Standard }(\textbf{AES}) può fornire la massima velocità di elaborazione perché molte CPU moderne supportano l'accelerazione hardware di queste operazioni.
 
 \subsection{"Easy program problem"}
-Il problema dell'\textit{easy program} si basa sul fatto che quando viene generato un programma casuale, si potrebbe decidere di eseguirlo solo in caso sia favorevole. Questa strategia è fattibile per due motivi principali:
+Il problema dell'\textit{easy program} si basa sul fatto che, quando viene generato un programma casuale, si potrebbe decidere di eseguirlo solo in caso sia favorevole. Questa strategia è fattibile per due motivi principali:
 
 \begin{itemize}
     \item \textbf{Distribuzione del Tempo di Esecuzione}: I tempi di esecuzione dei programmi generati casualmente seguono tipicamente una \textit{distribuzione log-normale}. Questi possono rapidamente analizzati e in caso di tempo di esecuzione superiore alla media, l'esecuzione può essere saltata e può essere generato un nuovo programma. Se quest'ultima operazione risulta essere economica, può migliorare significativamente le prestazioni.
